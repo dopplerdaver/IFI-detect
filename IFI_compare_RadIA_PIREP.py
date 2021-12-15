@@ -59,7 +59,6 @@ PIRP_neg_num       = np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' iint1'
 SSLW_pos_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) >= 0.5]).shape[0]
 SSLW_neg_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) < 0.5]).shape[0]
 SSLW_neg           = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) < 0.5])
-
 FZDZ               = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) >= 0.0])
 FZDZ_pos_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) >= 0.5]).shape[0]
 FZDZ_neg_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) < 0.5]).shape[0]
@@ -100,16 +99,21 @@ plt.show()
 fig, ax = plt.subplots(figsize=(25,18))
 # ......plot map on axis
 countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
-# parse dates for plot's title
-
 # ......plot points
+cMap = "YlOrRd"
 Rv3PIR_ALL.plot(x=" lon", y=" lat", kind="scatter", 
-                c=' iint1', colormap="YlOrRd", vmin=-1, vmax=8, 
+                c=' iint1', colormap=cMap, vmin=-1, vmax=8, 
                 title='PIREP location/severity in CONUS during 2/17/2019', 
                 ax=ax)
-# ......add grid
-ax.grid(b=True, alpha=0.5)
+# ...... colorbar
+#ax.colorbar(loc='r')
+#cbar = plt.colorbar(label="Severity", orientation="vertical", shrink=.75)
+#cbar.set_ticks([0.07,.07, 0.08, 0.09, 0.13,.14])
+#cbar.set_ticklabels(['-1','1','2','3','4','5','6','7','8'])
 plt.xlim(-125, -66)
-plt.ylim(25, 50)
+plt.ylim(  25,  50)
+plt.grid(b=True, alpha=0.5)
+plt.xlabel('Lon [deg]', fontsize = 30)
+plt.ylabel('Lat [deg]', fontsize = 30)
 plt.show()
 
