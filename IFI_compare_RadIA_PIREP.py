@@ -53,9 +53,12 @@ Rv3PIR_MAXint      = Rv3PIR_ALL[[' fzdz_interestmax', ' slw_interestmax']]
 # PLOTS
 #-------------------------------------------
 # ... scatter of Rv3 FZDZ/SSLW ints
-plt.figure(figsize=(15, 15))
-plt.scatter(np.array(Rv3PIR_MAXint[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_MAXint[' slw_interestmax']).astype(np.float))
-plt.xlabel('FZDZ')
-plt.ylabel('SSLW')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.0])
+fig, ax = plt.subplots(figsize = (15, 15))
+ax.scatter(np.array(Rv3PIR_MAXint[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_MAXint[' slw_interestmax']).astype(np.float))
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.set_title('RadIA-v3 INT(MAX) near PIREPs for F17', fontsize=20)
+ax.text(0.8, 0.6, 'N = ', fontsize = 30)
+ax.set_xlabel('FZDZ INT', fontsize = 16)
+ax.set_ylabel('SSLW INT', fontsize = 16)
+#ax.xlim([0.0, 1.0])
+#ax.ylim([0.0, 1.0])
