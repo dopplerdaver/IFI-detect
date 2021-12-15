@@ -5,7 +5,7 @@
 # 		
 # CREATED: 	12.15.2021 - dserke
 #
-# PURPOSE:	1)ingest matched RadIA and PIREPs csv file, 2) manipulate and plot the data
+# PURPOSE:	1) ingest matched RadIA and PIREPs csv file, 2) manipulate and plot the data
 #
 #-------------------------------------------
 
@@ -47,7 +47,15 @@ Rv3PIR_PIRP        = pd.read_csv(Rv3PIR_dir+Rv3PIR_PIRP_name,           index_co
 #-------------------------------------------
 # ... concatenate input pandas dfs
 Rv3PIR_ALL         = pd.concat([Rv3PIR_FZDZ, Rv3PIR_SSLW, Rv3PIR_PIRP], axis=1)
+Rv3PIR_MAXint      = Rv3PIR_ALL[[' fzdz_interestmax', ' slw_interestmax']]
 
 #-------------------------------------------
 # PLOTS
 #-------------------------------------------
+# ... scatter of Rv3 FZDZ/SSLW ints
+plt.figure(figsize=(15, 15))
+plt.scatter(np.array(Rv3PIR_MAXint[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_MAXint[' slw_interestmax']).astype(np.float))
+plt.xlabel('FZDZ')
+plt.ylabel('SSLW')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
