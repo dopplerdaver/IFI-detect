@@ -63,26 +63,30 @@ FZDZ               = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interest
 FZDZ_pos_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) >= 0.5]).shape[0]
 FZDZ_neg_num       = (np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) < 0.5]).shape[0]
 FZDZ_neg           = [np.array(Rv3PIR_ALL[' iint1'])[(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) < 0.5]]
-FZDZ_neg_ind       = FZDZ.index(FZDZ_neg )
-R-v3_neg_num       = SSLW_neg && FZDZ_neg
+
+Rv3_pos_ind        = [(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) >= 0.5] or [(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) >= 0.5]
+Rv3_neg_ind        = [(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) < 0.5] or [(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) < 0.5]
+print(sum(sum(Rv3_pos_ind)))
+print(sum(sum(Rv3_neg_ind)))
 
 #-------------------------------------------
 # PLOTS
 #-------------------------------------------
+cMap = 'viridis'
 # ... scatter of R-v3 FZDZ/SSLW ints with PIREP sev color-coded points
 fig, ax = plt.subplots(figsize = (15, 15))
 #for i, ind in enumerate(np.array(Rv3PIR_ALL[' iint1']).astype(np.float)):
 #    if np.array(Rv3PIR_ALL[' iint1']).astype(np.float) >= 1:
-ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_ALL[' slw_interestmax']).astype(np.float), c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap='viridis', vmin=-1, vmax=8, s=75, marker='o')
+ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_ALL[' slw_interestmax']).astype(np.float), c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
 #    else:
 #       ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax'][i]).astype(np.float), np.array(Rv3PIR_ALL[' slw_interestmax'][i]).astype(np.float), c=np.array(Rv3PIR_ALL[' iint1'][i]).astype(np.float), s=75, marker='x')
 ax.grid(color='grey', linestyle='--', linewidth=1)
 ax.set_title('RadIA-v3 INT(MAX) near PIREPs for ICICLE F17', fontsize=20)
-ax.text(0.75, 0.60, 'N-P-TOT = '+str(PIRP_tot_num), fontsize = 20)
-ax.text(0.75, 0.55, 'N-P-POS = '+str(PIRP_pos_num), fontsize = 20)
-#ax.text(0.80, 0.50, 'N-R-G50 = '+str(np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' iint1'])>0.0].shape[0]), fontsize = 20)
-ax.text(0.75, 0.45, 'N-P-NEG = '+str(PIRP_neg_num), fontsize = 20)
-#ax.text(0.80, 0.40, 'N-R-L50 = '+str(np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' slw_interestmax'])<0.50].shape[0]), fontsize = 20)
+ax.text(0.75, 0.60, 'N(P-TOT) = '+str(PIRP_tot_num), fontsize = 20)
+ax.text(0.75, 0.55, 'N(P-POS) = '+str(PIRP_pos_num), fontsize = 20)
+ax.text(0.80, 0.50, 'N(R-G50) = '+str(sum(sum(Rv3_pos_ind))), fontsize = 20)
+ax.text(0.75, 0.45, 'N(P-NEG) = '+str(PIRP_neg_num), fontsize = 20)
+ax.text(0.80, 0.40, 'N(R-L50) = '+str(sum(sum(Rv3_neg_ind))), fontsize = 20)
 ax.set_xlabel('FZDZ INT', fontsize = 16)
 ax.set_ylabel('SSLW INT', fontsize = 16)
 ax.plot([0.0, 0.5], [0.5, 0.5], 'r--', label='test')
@@ -100,16 +104,10 @@ fig, ax = plt.subplots(figsize=(25,18))
 # ......plot map on axis
 countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
 # ......plot points
-cMap = "YlOrRd"
 Rv3PIR_ALL.plot(x=" lon", y=" lat", kind="scatter", 
                 c=' iint1', colormap=cMap, vmin=-1, vmax=8, 
                 title='PIREP location/severity in CONUS during 2/17/2019', 
                 ax=ax)
-# ...... colorbar
-#ax.colorbar(loc='r')
-#cbar = plt.colorbar(label="Severity", orientation="vertical", shrink=.75)
-#cbar.set_ticks([0.07,.07, 0.08, 0.09, 0.13,.14])
-#cbar.set_ticklabels(['-1','1','2','3','4','5','6','7','8'])
 plt.xlim(-125, -66)
 plt.ylim(  25,  50)
 plt.grid(b=True, alpha=0.5)
