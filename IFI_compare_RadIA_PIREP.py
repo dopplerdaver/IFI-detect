@@ -70,6 +70,9 @@ Rv3PIR_RNAN        = Rv3PIR_ALL.loc[ (Rv3PIR_ALL[' fzdz_interestmax'].astype(np.
 # ... create new Rv3/PIRP pandas df containing only (Rv3 INT=NaN & PIRP sev > 0) values
 Rv3PIR_RNAN_Sg0    = Rv3PIR_ALL.loc[ (Rv3PIR_ALL[' fzdz_interestmax'].astype(np.float).isna()) & (Rv3PIR_ALL[' slw_interestmax'].astype(np.float).isna()) & (Rv3PIR_ALL[' iint1'] > 0) ]
 
+# ... create new Rv3/PIRP pandas df containing only (Rv3 INT=NaN & PIRP sev > 0) values
+Rv3PIR_RVAL_Sg0    = Rv3PIR_ALL.loc[ ~(Rv3PIR_ALL[' fzdz_interestmax'].astype(np.float).isna()) & ~(Rv3PIR_ALL[' slw_interestmax'].astype(np.float).isna()) & (Rv3PIR_ALL[' iint1'] > 0) ]
+
 # ... indexing/filtering of dataframe values
 PIRP_tot_num       = np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' iint1'])].shape[0]
 PIRP_pos_num       = np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' iint1']) > 0.0].shape[0]
@@ -108,11 +111,13 @@ Rv3_neg_num        = sum(sum(Rv3_neg_ind))
 #    return sc
 
 cMap    = 'viridis'
+
+# SCATTER PLOTS
+# ... for R-v3 FZDZ/SSLW ints with PIREP sev color-coded points
 fig, ax = plt.subplots(figsize = (15, 15))
 m       = ['*','o','o','o','o','o','o','o','o','o']
 #scatter = mscatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_ALL[' slw_interestmax']).astype(np.float), c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), s=75, m=m, ax=ax)
 #plt.show()
-# ... scatter plot of R-v3 FZDZ/SSLW ints with PIREP sev color-coded points
 ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_ALL[' slw_interestmax']).astype(np.float), c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
 ax.grid(color='grey', linestyle='--', linewidth=1)
 ax.set_title('RadIA-v3 INT(MAX) near PIREPs for ICICLE F17', fontsize=20)
@@ -127,12 +132,10 @@ ax.plot([0.0, 0.5], [0.5, 0.5], 'r--', label='test')
 ax.plot([0.5, 0.5], [0.5, 0.0], 'r--', label='test')
 plt.xlim(0.0, 1.02)
 plt.ylim(0.0, 1.02)
-#divider = make_axes_locatable(ax)
-#cax     = divider.append_axes("right", size="5%", pad=0.75)
-#plt.colorbar(cax=cax)
 plt.show()
 
-# ... scatter plot of R-v3 FZDZ ints versus PIREP reporting height with PIREP sev color-coded points
+# SCATTER PLOTS
+# ...for R-v3 FZDZ ints versus PIREP reporting height with PIREP sev color-coded points
 fig, ax = plt.subplots(figsize = (15, 15))
 ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), Rv3PIR_ALL[' flvl'], c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
 ax.set_xlabel('FZDZ INT', fontsize = 16)
@@ -140,7 +143,7 @@ ax.set_ylabel('F-lvl [kft]', fontsize = 16)
 plt.grid(b=True, alpha=0.5)
 plt.show()
 
-# mapview plot of PIREP locations
+# MAPVIEW PLOTS OF PIREP LOCATIONS/SEVERITIES
 # ...for Rv3PIR_ALL df
 # ......initialize an axis
 fig, ax = plt.subplots(figsize=(25,18))
@@ -193,3 +196,13 @@ plt.xlabel('Lon [deg]', fontsize = 30)
 plt.ylabel('Lat [deg]', fontsize = 30)
 plt.legend(['NEXRAD'])
 plt.show()
+
+# HISTOGRAMS OF PIRP HEIGHTS
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25,18))
+# ...for Rv3PIR_RVAL_Sg0 df
+Rv3PIR_RVAL_Sg0.hist(column=' flvl', bins=25, ax=ax1, orientation="horizontal")
+# ...for Rv3PIR_RNAN_Sg0 df
+Rv3PIR_RNAN_Sg0.hist(column=' flvl', bins=25, ax=ax2, orientation="horizontal")
+plt.xlabel('N of PIREP', fontsize = 30)
+plt.ylabel('Flight level [kft x 10]', fontsize = 30)
+plt.xlim(0, 10)
