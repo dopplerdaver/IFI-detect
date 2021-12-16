@@ -37,7 +37,7 @@ Rv3PIR_SSLW_name   = 'exfout_MrmsPostProcessor_slw_interest.csv'
 Rv3PIR_PIRP_name   = 'exmatch_MrmsPostProcessor.csv'
 
 #-------------------------------------------
-# LOAD INPUT FILES
+# LOAD INPUT DATASETS
 #-------------------------------------------
 # ... radar data into radar object
 Rv3PIR_FZDZ        = pd.read_csv(Rv3PIR_dir+Rv3PIR_FZDZ_name, header=0, index_col=0)
@@ -53,6 +53,9 @@ countries          = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
 # ... concatenate Rv3 and PIRP input pandas dfs into one df
 Rv3PIR_ALL         = pd.concat([Rv3PIR_FZDZ, Rv3PIR_SSLW, Rv3PIR_PIRP], axis=1)
 #Rv3PIR_MAXint      = Rv3PIR_ALL[[' fzdz_interestmax', ' slw_interestmax']]
+
+# ... create new Rv3/PIRP pandas df containing only 'NaN' INT values
+Rv3PIR_RNAN        = Rv3PIR_ALL.loc[ (Rv3PIR_ALL[' fzdz_interestmax'].astype(np.float).isna()) & (Rv3PIR_ALL[' slw_interestmax'].astype(np.float).isna()) ]
 
 # ... indexing/filtering of dataframe values
 PIRP_tot_num       = np.array(Rv3PIR_ALL[' iint1'])[np.array(Rv3PIR_ALL[' iint1'])].shape[0]
