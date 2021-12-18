@@ -28,6 +28,9 @@ warnings.filterwarnings('ignore')
 #-------------------------------------------
 # DEFINE INPUT PATHS
 #-------------------------------------------
+# ... define raduis (r) of earth in km
+r_km               = 6378.1
+
 # ... define base path dir
 base_path_dir      = '/d1/serke/projects/'
 
@@ -60,6 +63,31 @@ countries          = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
 #-------------------------------------------
 # MANIPULATE INPUT DATA
 #-------------------------------------------
+# ... define function
+def haversine_distance(lat1, lon1, lat2, lon2):
+   phi1         = np.radians(lat1)
+   phi2         = np.radians(lat2)
+   delta_phi    = np.radians(lat2 - lat1)
+   delta_lambda = np.radians(lon2 - lon1)
+   a            = np.sin(delta_phi / 2)**2 + np.cos(phi1) * np.cos(phi2) *   np.sin(delta_lambda / 2)**2
+   res          = r_km * (2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a)))
+   return np.round(res, 2)
+
+# ... calculate distance between Rv3PIR_PIRP lon/lat and nexrad_sites LAT_DEG/LON_DEG
+nexrad_distfromPIRPmin_km = []
+for index_PIRP, row_PIRP in enumerate(range(Rv3PIR_PIRP.shape[0])):
+    dist_from_nexrads_km = []
+    for index, row in enumerate(range(nexrad_sites.shape[0])):
+        #print(index)
+        dist_from_nexrads_km.append(haversine_distance(Rv3PIR_PIRP[' lat'][index_PIRP], Rv3PIR_PIRP[' lon'][index_PIRP], nexrad_sites[' LAT_DEG'][index], nexrad_sites[' LON_DEG'][index]))
+        #print(index, dist_from_nexrads_km[index])
+    # ... add DistFromPIRP to sites df
+    nexrad_sites['DistFromPIRP'] = dist_from_nexrads_km
+    # ... find min dist of PIRP from all sites and save to list
+    nexrad_distfromPIRPmin_km.append(nexrad_sites['DistFromPIRP'].min())
+# ... concat closest nexrad site dist to PIRP to df
+Rv3PIR_PIRP['Distfromnexrad_min_km'] = nexrad_distfromPIRPmin_km
+
 # ... concatenate Rv3 and PIRP input pandas dfs into one df
 Rv3PIR_ALL         = pd.concat([Rv3PIR_FZDZ, Rv3PIR_SSLW, Rv3PIR_PIRP], axis=1)
 #Rv3PIR_MAXint      = Rv3PIR_ALL[[' fzdz_interestmax', ' slw_interestmax']]
