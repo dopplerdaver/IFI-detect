@@ -17,6 +17,8 @@ import geopandas               as gpd
 import numpy                   as np
 import csv
 
+import wradlib as wrl
+
 import matplotlib              as mpl
 from   matplotlib              import pyplot as plt
 from   matplotlib.colors       import ListedColormap
@@ -30,6 +32,17 @@ warnings.filterwarnings('ignore')
 #-------------------------------------------
 # ... define raduis (r) of earth in km
 r_km               = 6378.1
+
+ft_TO_m            = 0.3048
+
+nbins              = 1832.0
+range_res_m        =  250.0
+bw_deg             =    1.0    # half power beam width (deg)
+vol_deg            = [0.5, 1.5, 2.5, 3.5, 4.5]
+lat_KBBX           =   39.4969580 
+lon_KBBX           = -121.6316557
+alt_KBBX_m         =  221.0 * ft_TO_m
+sitecoords         = (lon_KBBX, lat_KBBX, alt_KBBX_m)
 
 # ... define base path dir
 base_path_dir      = '/d1/serke/projects/'
@@ -63,7 +76,7 @@ countries          = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
 #-------------------------------------------
 # MANIPULATE INPUT DATA
 #-------------------------------------------
-# ... define function
+# ... define function for distance between two lat/lon points
 def haversine_distance(lat1, lon1, lat2, lon2):
    phi1         = np.radians(lat1)
    phi2         = np.radians(lat2)
@@ -85,10 +98,10 @@ for index_PIRP, row_PIRP in enumerate(range(Rv3PIR_PIRP.shape[0])):
     nexrad_sites['DistFromPIRP'] = dist_from_nexrads_km
     # ... find min dist of PIRP from all sites and save to list
     nexrad_distfromPIRPmin_km.append(nexrad_sites['DistFromPIRP'].min())
-# ... concat closest nexrad site dist to PIRP to df
+# ... concat closest nexrad site dist to PIRP to Rv3PIR_PIRP df
 Rv3PIR_PIRP['Distfromnexrad_min_km'] = nexrad_distfromPIRPmin_km
 
-# ... concatenate Rv3 and PIRP input pandas dfs into one df
+# ... concatenate Rv3 algo INT outputs and PIRP input pandas dfs into one df
 Rv3PIR_ALL         = pd.concat([Rv3PIR_FZDZ, Rv3PIR_SSLW, Rv3PIR_PIRP], axis=1)
 #Rv3PIR_MAXint      = Rv3PIR_ALL[[' fzdz_interestmax', ' slw_interestmax']]
 
@@ -117,6 +130,8 @@ Rv3_pos_ind        = [(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) >= 0.5]
 Rv3_neg_ind        = [(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float) < 0.5] and [(Rv3PIR_ALL[' slw_interestmax']).astype(np.float) < 0.5]
 Rv3_pos_num        = sum(sum(Rv3_pos_ind))
 Rv3_neg_num        = sum(sum(Rv3_neg_ind))
+
+ranges              = np.arange(nbins) * range_res_m
 
 #-------------------------------------------
 # PLOTS
@@ -169,6 +184,27 @@ ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), Rv3PIR_AL
 ax.set_xlabel('FZDZ INT', fontsize = 16)
 ax.set_ylabel('F-lvl [kft]', fontsize = 16)
 plt.grid(b=True, alpha=0.5)
+plt.show()
+
+# 3 PLOTS: RANGE/ALT FOR 1) CLEAR AIR VCP VOLUME, 2) PIREP SEV WHEN Rv3=NaN, 3) PIREP SEV WHEN Rv3=VAL
+wrl.vis.plot_scan_strategy(ranges, vol_deg, sitecoords, beamwidth=bw_deg, vert_res=1000., maxalt=15000., range_res=5000., maxrange=200000., units='km', cmap='viridis')
+fig, ax = plt.subplots(figsize = (16, 8))
+plt.scatter(np.array(Rv3PIR_RNAN_Sg0['Distfromnexrad_min_km']).astype(np.float), np.array(Rv3PIR_RNAN_Sg0[' flvl']).astype(np.float)*(ft_TO_m/10), c=np.array(Rv3PIR_RNAN_Sg0[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=5, s=75, marker='o')
+plt.plot([10, 22, 42, 105, 153], [1.0, 2.0, 4.0, 10.0, 15.0])
+plt.plot([20, 40, 60, 80, 120, 160, 193], [0.3, 0.5, 0.9, 1.1, 2.0, 3.0, 4.0])
+plt.xlim(0.0, 200.0)
+plt.ylim(0.0,  15.0)
+plt.xlabel('Range [km]')
+plt.ylabel('Altitude [km]')
+plt.show()
+fig, ax = plt.subplots(figsize = (16, 8))
+plt.scatter(np.array(Rv3PIR_RVAL_Sg0['Distfromnexrad_min_km']).astype(np.float), np.array(Rv3PIR_RVAL_Sg0[' flvl']).astype(np.float)*(ft_TO_m/10), c=np.array(Rv3PIR_RVAL_Sg0[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=5, s=75, marker='o')
+plt.plot([10, 22, 42, 105, 153], [1.0, 2.0, 4.0, 10.0, 15.0])
+plt.plot([20, 40, 60, 80, 120, 160, 193], [0.3, 0.5, 0.9, 1.1, 2.0, 3.0, 4.0])
+plt.xlim(0.0, 200.0)
+plt.ylim(0.0,  15.0)
+plt.xlabel('Range [km]')
+plt.ylabel('Altitude [km]')
 plt.show()
 
 # MAPVIEW PLOTS OF PIREP LOCATIONS/SEVERITIES
