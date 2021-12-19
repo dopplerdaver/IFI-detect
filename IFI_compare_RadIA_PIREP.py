@@ -177,14 +177,14 @@ plt.xlim(0.0, 1.02)
 plt.ylim(0.0, 1.02)
 plt.show()
 
-# SCATTER PLOTS
-# ...for R-v3 FZDZ ints versus PIREP reporting height with PIREP sev color-coded points
-fig, ax = plt.subplots(figsize = (15, 15))
-ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), Rv3PIR_ALL[' flvl'], c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
-ax.set_xlabel('FZDZ INT', fontsize = 16)
-ax.set_ylabel('F-lvl [kft]', fontsize = 16)
-plt.grid(b=True, alpha=0.5)
-plt.show()
+## SCATTER PLOTS
+## ...for R-v3 FZDZ ints versus PIREP reporting height with PIREP sev color-coded points
+#fig, ax = plt.subplots(figsize = (15, 15))
+#ax.scatter(np.array(Rv3PIR_ALL[' fzdz_interestmax']).astype(np.float), Rv3PIR_ALL[' flvl'], c=np.array(Rv3PIR_ALL[' iint1']).astype(np.float), cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
+#ax.set_xlabel('FZDZ INT', fontsize = 16)
+#ax.set_ylabel('F-lvl [kft]', fontsize = 16)
+#plt.grid(b=True, alpha=0.5)
+#plt.show()
 
 # 3 PLOTS: RANGE/ALT FOR 1) CLEAR AIR VCP VOLUME, 2) PIREP SEV WHEN Rv3=NaN, 3) PIREP SEV WHEN Rv3=VAL
 wrl.vis.plot_scan_strategy(ranges, vol_deg, sitecoords, beamwidth=bw_deg, vert_res=1000., maxalt=15000., range_res=5000., maxrange=200000., units='km', cmap='viridis')
