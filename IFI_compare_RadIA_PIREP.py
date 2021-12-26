@@ -12,14 +12,17 @@
 #-------------------------------------------
 # IMPORT LIBRARIES
 #-------------------------------------------
-import pandas                  as pd
-import geopandas               as gpd
-import numpy                   as np
+import pandas                  as     pd
+import geopandas               as     gpd
+
+import numpy                   as     np
+from   numpy                   import *
+
 import csv
 
 import wradlib as wrl
 
-import matplotlib              as mpl
+import matplotlib              as     mpl
 from   matplotlib              import pyplot as plt
 from   matplotlib.colors       import ListedColormap
 from   mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -306,17 +309,13 @@ plt.show()
 # HISTOGRAMS OF PIRP HEIGHTS
 #   for PIRP when Rv3 val is pos (left) and when Rv3 val is NaN (right)
 # ...for Rv3PIR_RVAL_Sg0 df
-fig = plt.subplots(figsize=(25, 18))
-ax1 = plt.subplot(121)
-Rv3PIR_RVAL_Sg0.hist(column=' flvl', bins=45, ax=ax1, orientation="horizontal")
-plt.xlabel('N of PIREP', fontsize = 30)
-plt.ylabel('Flight level [kft x 10]', fontsize = 30)
-plt.xlim(0, 750)
-plt.ylim(0, 350)
+fig, ax      = plt.subplots(figsize=(25, 18))
+ax.hist(Rv3PIR_RVAL_Sg0[' flvl'], density=True, bins=45, label='Rv3=gt0', orientation='horizontal', edgecolor='black', fill=False)
 # ...for Rv3PIR_RNAN_Sg0 df
-ax2 = plt.subplot(122)
-Rv3PIR_RNAN_Sg0.hist(column=' flvl', bins=45, ax=ax2, orientation="horizontal")
-plt.xlabel('N of PIREP', fontsize = 30)
+ax.hist(Rv3PIR_RNAN_Sg0[' flvl'], density=True, bins=45, label='Rv3=NaN', orientation="horizontal", edgecolor='red', fill=False)
+plt.xlabel('Density of PIREPs', fontsize = 30)
 plt.ylabel('Flight level [kft x 10]', fontsize = 30)
-plt.xlim(0, 750)
+#plt.xlim(0, 750)
 plt.ylim(0, 350)
+plt.legend()
+plt.show()
