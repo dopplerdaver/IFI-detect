@@ -76,6 +76,22 @@ countries          = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
 #-------------------------------------------
 # MANIPULATE INPUT DATA
 #-------------------------------------------
+# Data from full month Feb2019 ICICLE have a few missing RadIA matchups (rows)
+# ... find missing integers in RadIA FZDZ/SSLW lists
+def find_missing(input):
+    return [x for x in range(input[0], input[-1]+1)
+	    if x not in input]
+missing_SSLW_inds = find_missing(Rv3PIR_SSLW.index)
+missing_FZDZ_inds = find_missing(Rv3PIR_FZDZ.index)
+
+# ... exclude the inds missing from FZDZ/SSLW dfs from the PIRP df
+Rv3PIR_PIRP.drop(Rv3PIR_PIRP.index[[missing_SSLW_inds]], inplace=True)
+# ... exclude ind 0 from the PIRP df
+#Rv3PIR_PIRP.drop(Rv3PIR_PIRP.index[[0]], inplace=True)
+
+Rv3PIR_FZDZ.index = Rv3PIR_FZDZ.index-1
+Rv3PIR_SSLW.index = Rv3PIR_SSLW.index-1
+
 # ... define function for distance between two lat/lon points
 def haversine_distance(lat1, lon1, lat2, lon2):
    phi1         = np.radians(lat1)
@@ -91,7 +107,6 @@ nexrad_distfromPIRPmin_km = []
 for index_PIRP, row_PIRP in enumerate(range(Rv3PIR_PIRP.shape[0])):
     dist_from_nexrads_km = []
     for index, row in enumerate(range(nexrad_sites.shape[0])):
-        #print(index)
         dist_from_nexrads_km.append(haversine_distance(Rv3PIR_PIRP[' lat'][index_PIRP], Rv3PIR_PIRP[' lon'][index_PIRP], nexrad_sites[' LAT_DEG'][index], nexrad_sites[' LON_DEG'][index]))
         #print(index, dist_from_nexrads_km[index])
     # ... add DistFromPIRP to sites df
@@ -177,6 +192,22 @@ plt.xlim(0.0, 1.02)
 plt.ylim(0.0, 1.02)
 plt.show()
 
+# ... for R-v3 SSLW ints vs PIREP sev 
+m, b    = np. polyfit(np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float), np.array(Rv3PIR_RVAL_Sg0[' iint1']).astype(np.float), 1)
+fig, ax = plt.subplots(figsize = (15, 15))
+ax.scatter(np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float), np.array(Rv3PIR_RVAL_Sg0[' iint1']).astype(np.float), c='grey', cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
+ax.plot(np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float), m*np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float) + b)
+ax.grid(color='grey', linestyle='--', linewidth=1)
+plt.show()
+
+# ... for R-v3 FZDZ ints vs PIREP sev 
+m, b    = np. polyfit(np.array(Rv3PIR_RVAL_Sg0[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_RVAL_Sg0[' iint1']).astype(np.float), 1)
+fig, ax = plt.subplots(figsize = (15, 15))
+ax.scatter(np.array(Rv3PIR_RVAL_Sg0[' fzdz_interestmax']).astype(np.float), np.array(Rv3PIR_RVAL_Sg0[' iint1']).astype(np.float), c='grey', cmap=cMap, vmin=-1, vmax=8, s=75, marker='o')
+ax.plot(np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float), m*np.array(Rv3PIR_RVAL_Sg0[' slw_interestmax']).astype(np.float) + b)
+ax.grid(color='grey', linestyle='--', linewidth=1)
+plt.show()
+
 ## SCATTER PLOTS
 ## ...for R-v3 FZDZ ints versus PIREP reporting height with PIREP sev color-coded points
 #fig, ax = plt.subplots(figsize = (15, 15))
@@ -208,22 +239,28 @@ plt.ylabel('Altitude [km]')
 plt.show()
 
 # MAPVIEW PLOTS OF PIREP LOCATIONS/SEVERITIES
+#............................................
 # ...for Rv3PIR_ALL df
 # ......initialize an axis
 fig, ax = plt.subplots(figsize=(25,18))
 # ......plot map on axis
-countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
+countries[countries['name'] == 'United States of America'].plot(color='lightgrey', ax=ax)
+# ...... plot NEXRAD locs
+nexrad_sites.plot(x=' LON_DEG', y=' LAT_DEG', marker='x', linestyle='', c='red', ax=ax)
 # ......plot points
-Rv3PIR_ALL.plot(x=" lon", y=" lat", kind="scatter", s=75, marker='o', 
+Rv3PIR_ALL.plot(x=' lon', y=' lat', kind='scatter', s=75, marker='o', 
                 c=' iint1', colormap=cMap, vmin=-1, vmax=8, 
-                title='All PIREP location/severity in CONUS during 2/17/2019', 
+                title='', 
                 ax=ax)
 plt.xlim(-125, -66)
 plt.ylim(  25,  50)
 plt.grid(b=True, alpha=0.5)
+plt.title('PIREP location/severity during Feb of 2019', fontsize = 30)
 plt.xlabel('Lon [deg]', fontsize = 30)
 plt.ylabel('Lat [deg]', fontsize = 30)
+plt.legend(['NEXRAD'], fontsize = 15, labelcolor='red')
 plt.show()
+#............................................
 # ...for Rv3PIR_RNAN df
 # ......initialize an axis
 fig, ax = plt.subplots(figsize=(25,18))
@@ -232,14 +269,17 @@ countries[countries["name"] == "United States of America"].plot(color="lightgrey
 # ......plot points
 Rv3PIR_RNAN.plot(x=" lon", y=" lat", kind="scatter", s=75, marker='o', 
                 c=' iint1', colormap=cMap, vmin=-1, vmax=8, 
-                title='PIREP location/severity when Rv3 INTs=NaN in CONUS during 2/17/2019', 
+                title='', 
                 ax=ax)
 plt.xlim(-125, -66)
 plt.ylim(  25,  50)
 plt.grid(b=True, alpha=0.5)
+plt.title('PIREP location/severity when Rv3 INTs=NaN during Feb of 2019', fontsize = 30)
 plt.xlabel('Lon [deg]', fontsize = 30)
 plt.ylabel('Lat [deg]', fontsize = 30)
+plt.legend(['NEXRAD'], fontsize = 15, labelcolor='red')
 plt.show()
+#............................................
 # ...for Rv3PIR_RNAN_Sg0 df
 # ... This case is both Rv3 INT values are NaN (RNAN) and PIRP sev > 0
 # ......initialize an axis
@@ -248,25 +288,31 @@ fig, ax = plt.subplots(figsize=(25,18))
 countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
 # ...... plot NEXRAD locs
 nexrad_sites.plot(x=' LON_DEG', y=' LAT_DEG', marker='x', linestyle='', c='red', ax=ax)
+#plt.text(np.array(nexrad_sites[' LON_DEG']), np.array(nexrad_sites[' LAT_DEG'])+0.02, 't')
 # ......plot points
 Rv3PIR_RNAN_Sg0.plot(x=" lon", y=" lat", kind="scatter", s=75, marker='o', 
                 c=' iint1', colormap=cMap, vmin=-1, vmax=8, 
-                title='PIREP location/severity when (Rv3 INTs=NaN & SEV>0) in CONUS during 2/17/2019', 
+                title='', 
                 ax=ax)
 plt.xlim(-125, -66)
 plt.ylim(  25,  50)
 plt.grid(b=True, alpha=0.5)
+plt.title('PIREP location/severity when (Rv3 INTs=NaN & SEV>0) during Feb of 2019', fontsize = 30)
 plt.xlabel('Lon [deg]', fontsize = 30)
 plt.ylabel('Lat [deg]', fontsize = 30)
-plt.legend(['NEXRAD'])
+plt.legend(['NEXRAD'], fontsize = 15, labelcolor='red')
 plt.show()
 
 # HISTOGRAMS OF PIRP HEIGHTS
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25,18))
+#   for PIRP when Rv3 val is pos (left) and when Rv3 val is NaN (right)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 18))
 # ...for Rv3PIR_RVAL_Sg0 df
-Rv3PIR_RVAL_Sg0.hist(column=' flvl', bins=25, ax=ax1, orientation="horizontal")
-# ...for Rv3PIR_RNAN_Sg0 df
-Rv3PIR_RNAN_Sg0.hist(column=' flvl', bins=25, ax=ax2, orientation="horizontal")
+Rv3PIR_RVAL_Sg0.hist(column=' flvl', bins=45, ax=ax1, orientation="horizontal")
 plt.xlabel('N of PIREP', fontsize = 30)
 plt.ylabel('Flight level [kft x 10]', fontsize = 30)
-plt.xlim(0, 10)
+plt.ylim(0, 350)
+# ...for Rv3PIR_RNAN_Sg0 df
+Rv3PIR_RNAN_Sg0.hist(column=' flvl', bins=45, ax=ax2, orientation="horizontal")
+plt.xlabel('N of PIREP', fontsize = 30)
+plt.ylabel('Flight level [kft x 10]', fontsize = 30)
+plt.ylim(0, 350)
